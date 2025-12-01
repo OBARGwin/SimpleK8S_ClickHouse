@@ -1,0 +1,29 @@
+# ConfigMap для ClickHouse, содержит файл users.xml с настройками пользователей.
+# Этот ConfigMap монтируется в контейнер ClickHouse и позволяет задать:
+# - пользователей и их пароли
+# - профили пользователей
+# - сети, с которых разрешено подключение
+#
+# Используемый шаблон имени: {{ include "clickhouse.fullname" . }}-config
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "clickhouse.fullname" . }}-config
+data:
+  users.xml: |
+    <yandex>
+      <users>
+{{- range .Values.users }}
+        <{{ .name }}>
+          <password>{{ .password }}</password>
+          <profile>{{ .profile }}</profile>
+          <networks>
+{{- range .networks }}
+            <ip>{{ . }}</ip>
+{{- end }}
+          </networks>
+        </{{ .name }}>
+{{- end }}
+      </users>
+    </yandex>

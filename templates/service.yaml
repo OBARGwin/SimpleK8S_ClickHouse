@@ -1,0 +1,25 @@
+# Service для ClickHouse
+# Этот объект Kubernetes создаёт сетевой доступ к Pod-ам ClickHouse.
+# Service позволяет подключаться к базе данных и HTTP-интерфейсу:
+# - TCP порт 9000 для работы с ClickHouse клиентами
+# - HTTP порт 8123 для запросов через HTTP
+# Тип Service определяется в values.yaml (по умолчанию ClusterIP)
+# Selector указывает на Pod-ы ClickHouse по метке app
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "clickhouse.fullname" . }}
+  labels:
+    app: {{ include "clickhouse.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ include "clickhouse.fullname" . }}
+  ports:
+    - name: tcp
+      port: {{ .Values.service.port }}
+      targetPort: 9000
+    - name: http
+      port: {{ .Values.service.httpPort }}
+      targetPort: 8123

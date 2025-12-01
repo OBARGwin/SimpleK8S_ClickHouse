@@ -1,0 +1,64 @@
+# StatefulSet для ClickHouse
+# Этот объект управляет созданием Pod-ов ClickHouse с постоянным хранилищем.
+# StatefulSet обеспечивает:
+# - уникальные имена Pod-ов (например clickhouse-clickhouse-0)
+# - стабильные тома для хранения данных
+# - управление масштабированием реплик
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "clickhouse.fullname" . }}
+  labels:
+    app: {{ include "clickhouse.fullname" . }}
+spec:
+  serviceName: {{ include "clickhouse.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "clickhouse.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "clickhouse.fullname" . }}
+    spec:
+      securityContext:
+        fsGroup: 101
+      containers:
+        - name: clickhouse
+          image: "clickhouse/clickhouse-server:{{ .Values.clickhouseVersion }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+              name: tcp
+            - containerPort: 8123
+              name: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/clickhouse-server/config.d/users.xml
+              subPath: users.xml
+            - name: data
+              mountPath: /var/lib/clickhouse
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "clickhouse.fullname" . }}-config
+            items:
+              - key: users.xml
+                path: users.xml
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: "{{ .Values.persistence.storageClass }}"
+        {{- end }}
+

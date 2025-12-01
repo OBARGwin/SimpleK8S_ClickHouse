@@ -1,0 +1,10 @@
+# Chart.yaml
+# Основной файл описания Helm-чарта ClickHouse
+# Содержит метаданные чарта и версию приложения
+
+apiVersion: v2
+name: clickhouse-chart
+description: A simple single-node ClickHouse Helm chart
+type: application
+version: 0.1.0
+appVersion: "{{ .Values.clickhouseVersion }}"
