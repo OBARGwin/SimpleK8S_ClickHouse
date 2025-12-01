@@ -36,19 +36,19 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: config
+            - name: users-secret
               mountPath: /etc/clickhouse-server/config.d/users.xml
               subPath: users.xml
             - name: data
               mountPath: /var/lib/clickhouse
 
       volumes:
-        - name: config
-          configMap:
-            name: {{ include "clickhouse.fullname" . }}-config
-            items:
-              - key: users.xml
-                path: users.xml
+        - name: users-secret
+          secret:
+            secretName: {{ include "clickhouse.fullname" . }}-users
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-{{ include "clickhouse.fullname" . }}-0
   volumeClaimTemplates:
     - metadata:
         name: data
@@ -61,4 +61,3 @@ spec:
         {{- if .Values.persistence.storageClass }}
         storageClassName: "{{ .Values.persistence.storageClass }}"
         {{- end }}
-

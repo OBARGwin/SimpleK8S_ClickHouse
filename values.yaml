@@ -1,7 +1,8 @@
+# В values.yaml я оставил пароли в открытом виде для удобства использования в Helm
+# можно не хранить пароли в values.yaml, а передавать их через --set или использовать отдельный values-secret.yaml вне репозитория
+
 # Версию ClickHouse можно указать здесь
 clickhouseVersion: "latest"
-
-
 
 # Ресурсы контейнера
 resources:
@@ -12,15 +13,13 @@ resources:
     cpu: "1"
     memory: "1Gi"
 
-
 # Диски/хранилище
 persistence:
   enabled: true
   size: 10Gi
   storageClass: ""
 
-
-# Список пользователей и паролей, которые будут помещены в users.xml
+# Список пользователей и паролей
 users:
   - name: admin
     password: admin123
@@ -31,13 +30,11 @@ users:
     profile: readonly
     networks: ["127.0.0.1/32"]
 
-
 # Параметры сервиса
 service:
   type: ClusterIP
   port: 9000
   httpPort: 8123
-
 
 # Кол-во реплик: для single-инсталляции
 replicaCount: 1
